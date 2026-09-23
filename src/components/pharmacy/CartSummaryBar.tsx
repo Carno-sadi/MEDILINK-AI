@@ -24,7 +24,7 @@ export const CartSummaryBar: React.FC<CartSummaryBarProps> = ({ onOpenCart }) =>
   if (!mounted || count === 0) return null;
 
   return (
-    <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 p-3 bg-white/95 backdrop-blur-sm border-t border-border-soft shadow-lg animate-fadeIn">
+    <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 p-3 bg-white border-t border-border-soft shadow-lg animate-fadeIn">
       <div className="max-w-[500px] mx-auto flex items-center justify-between px-4 py-2 bg-brand text-white rounded-[14px]">
         <div className="flex items-center gap-2.5">
           <ShoppingBag className="w-5 h-5" />

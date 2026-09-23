@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useIntersectionOnce } from "@/lib/useIntersection";
 
 interface FAQItemData {
   q: string;
@@ -34,34 +35,18 @@ const FAQ_ITEMS: FAQItemData[] = [
 export const FAQSection: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const { ref } = useIntersectionOnce(0.1);
+
+  useEffect(() => {
+    setIsRevealed(true);
+  }, []);
 
   const toggleItem = (index: number) => {
     setActiveIndex((prev) => (prev === index ? null : index));
   };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsRevealed(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section id="faq" ref={sectionRef} className="py-[80px] lg:py-[120px] bg-bg-main">
+    <section id="faq" ref={ref} className="py-[80px] lg:py-[120px] bg-bg-main">
       <div className="max-w-[760px] mx-auto px-6 lg:px-0">
         {/* Section Header */}
         <div
@@ -93,7 +78,7 @@ export const FAQSection: React.FC = () => {
                   transitionDelay: `${idx * 0.08}s`,
                 }}
                 className={`border rounded-2xl transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isRevealed ? "translate-y-0" : "translate-y-6 opacity-0"
+                  isRevealed ? "animate-bounceUp" : "translate-y-6 opacity-0"
                 } ${
                   isActive
                     ? "bg-brand/[0.04] border-brand/30 shadow-[0_8px_24px_rgba(23,120,111,0.08)] p-6 opacity-100"

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Siren, User, Sparkles } from "lucide-react";
+import { Siren, User, Sparkles, Crown } from "lucide-react";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
 import { useToast } from "@/components/ui/Toast";
@@ -48,10 +48,10 @@ export const Navbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] animate-[navSlideDown_0.8s_cubic-bezier(0.16,1,0.3,1)_forwards] ${
         scrolled
-          ? "h-16 bg-white/80 backdrop-blur-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] border-b border-brand/15"
+          ? "h-16 bg-white/95 border-b border-brand/15 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)]"
           : isHomePage
-          ? "h-[76px] bg-transparent border-b border-transparent shadow-none"
-          : "h-[76px] bg-white/80 backdrop-blur-xl border-b border-border-soft shadow-xs"
+          ? "h-[76px] bg-white/95 border-b border-transparent shadow-none"
+          : "h-[76px] bg-white/95 border-b border-border-soft shadow-xs"
       }`}
     >
       <div className="max-w-[1240px] mx-auto h-full px-4 md:px-8 flex items-center justify-between">
@@ -103,6 +103,21 @@ export const Navbar: React.FC = () => {
             <Siren className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" />
             <span className="absolute inset-0 rounded-full border border-emergency/40 opacity-0 group-hover:opacity-100 group-hover:animate-ping pointer-events-none" />
           </Link>
+
+          {/* Mobile Register */}
+          <Link
+            href="/register"
+            className="sm:hidden text-[14px] font-semibold text-brand hover:underline"
+          >
+            Register
+          </Link>
+
+          {/* Mobile Premium Indicator */}
+          {mounted && isPremium && (
+            <div className="sm:hidden flex items-center justify-center w-8 h-8 rounded-full bg-accent-soft text-accent border border-accent/30">
+              <Crown className="w-5 h-5" />
+            </div>
+          )}
 
           {/* Desktop Auth / Subscription */}
           <div className="hidden sm:flex items-center gap-3 border-l border-brand/15 pl-4 min-w-[140px] justify-end">

@@ -1,47 +1,26 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Stethoscope, Pill, Siren, ArrowRight, Check } from "lucide-react";
+import { useIntersectionOnce } from "@/lib/useIntersection";
 
 export const FinalCTASection: React.FC = () => {
   const [isRevealed, setIsRevealed] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const { ref } = useIntersectionOnce(0.1);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsRevealed(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    // Safety fallback: ensure visible even if observer is slow
-    const timer = setTimeout(() => setIsRevealed(true), 1200);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
+    setIsRevealed(true);
   }, []);
 
   return (
-    <section id="cta" ref={sectionRef} className="py-[80px] lg:py-[120px] px-[5%] bg-bg-soft">
+    <section id="cta" ref={ref} className="py-[80px] lg:py-[120px] px-[5%] bg-bg-soft">
       <div className="max-w-[1200px] mx-auto">
         {/* Banner Card */}
         <div
-          className={`cta-banner-container relative transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            isRevealed ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.98]"
-          }`}
+           className={`cta-banner-container relative transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+             isRevealed ? "opacity-100 translate-y-0 scale-100 animate-popIn" : "opacity-0 translate-y-8 scale-[0.98]"
+           }`}
         >
           <div className="relative z-[2] flex flex-col lg:flex-row gap-12 lg:gap-10 items-center justify-between">
             {/* Left Column — 55% */}

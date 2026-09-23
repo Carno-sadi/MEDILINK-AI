@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
+import { useIntersectionOnce } from "@/lib/useIntersection";
 
 const TESTIMONIALS = [
   { name: "Rashed Karim", city: "Dhaka", stars: 5, quote: "Dr. Medilink AI identified my condition before I even saw a specialist. Truly remarkable." },
@@ -49,30 +50,7 @@ const TestimonialCard: React.FC<{ t: typeof TESTIMONIALS[0] }> = ({ t }) => (
 );
 
 export const ReviewsSection: React.FC = () => {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("testimonial-header-visible"); obs.unobserve(e.target); } }); },
-      { threshold: 0.15, rootMargin: "0px 0px -50px 0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("marquee-wrapper-visible"); obs.unobserve(e.target); } }); },
-      { threshold: 0.1 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  const { ref, isVisible } = useIntersectionOnce(0.1);
 
   const cards = TESTIMONIALS.map((t, i) => <TestimonialCard key={i} t={t} />);
   const doubledCards = [...cards, ...cards.map((c, i) => React.cloneElement(c, { key: `dup-${i}` }))];
@@ -80,8 +58,7 @@ export const ReviewsSection: React.FC = () => {
   return (
     <section className="py-[120px] md:py-[80px] bg-bg-soft overflow-hidden" id="testimonials">
       <div className="max-w-[1200px] mx-auto px-6">
-        {/* Header */}
-        <div ref={headerRef} className="text-center mb-16 testimonial-header-reveal">
+        <div className="text-center mb-16">
           <div className="w-[60px] h-[3px] rounded-full bg-gradient-to-r from-brand to-brand-soft mx-auto mb-7" />
           <span className="inline-block font-sans font-medium text-[11px] tracking-[0.12em] uppercase text-brand bg-brand/10 rounded-full px-3.5 py-1 mb-5">Patient Stories</span>
           <h2 className="font-heading font-extrabold text-[clamp(32px,4.5vw,52px)] text-text-primary leading-[1.15] mb-3.5">
@@ -94,9 +71,10 @@ export const ReviewsSection: React.FC = () => {
       </div>
 
       {/* Marquee Wrapper */}
-      <div ref={wrapperRef} className="marquee-wrapper-reveal relative w-screen overflow-hidden" style={{
+      <div ref={ref} className={`marquee-wrapper-reveal relative w-screen overflow-hidden ${isVisible ? "animate-dropDown" : "opacity-0"}`} style={{
         maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
         WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+        animationDelay: isVisible ? "0.2s" : undefined,
       }}>
         {/* Row 1 — Scrolls Left */}
         <div className="marquee-track marquee-left flex gap-5 w-max hover:[animation-play-state:paused]">
@@ -112,14 +90,7 @@ export const ReviewsSection: React.FC = () => {
       </div>
 
       <style jsx global>{`
-        .testimonial-header-reveal > * { opacity: 0; transform: translateY(24px); filter: blur(2px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), filter 0.7s cubic-bezier(0.16,1,0.3,1); }
-        .testimonial-header-visible > *:nth-child(1) { transition-delay: 0s; }
-        .testimonial-header-visible > *:nth-child(2) { transition-delay: 0.12s; }
-        .testimonial-header-visible > *:nth-child(3) { transition-delay: 0.24s; }
-        .testimonial-header-visible > *:nth-child(4) { transition-delay: 0.36s; }
-        .testimonial-header-visible > * { opacity: 1 !important; transform: translateY(0) !important; filter: blur(0) !important; }
-        .marquee-wrapper-reveal { opacity: 0; transform: scale(0.88) translateY(20px); filter: blur(4px); transition: opacity 1s cubic-bezier(0.16,1,0.3,1), transform 1s cubic-bezier(0.16,1,0.3,1), filter 1s cubic-bezier(0.16,1,0.3,1); }
-        .marquee-wrapper-visible { opacity: 1 !important; transform: scale(1) translateY(0) !important; filter: blur(0) !important; }
+        .marquee-wrapper-reveal { opacity: 1; transform: scale(1) translateY(0) !important; filter: blur(0) !important; }
         .marquee-left { animation: marqueeLeft 38s linear infinite; }
         .marquee-right { animation: marqueeRight 38s linear infinite; }
         @keyframes marqueeLeft { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }

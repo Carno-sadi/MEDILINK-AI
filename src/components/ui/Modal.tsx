@@ -43,7 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[70] grid place-items-center p-4 bg-[rgba(26,43,76,0.45)] backdrop-blur-[2px] animate-fadeIn"
+      className="fixed inset-0 z-[70] grid place-items-center p-4 bg-[rgba(26,43,76,0.45)] animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

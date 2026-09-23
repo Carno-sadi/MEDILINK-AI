@@ -45,7 +45,7 @@ export const Drawer: React.FC<DrawerProps> = ({
     <div className="fixed inset-0 z-[60] overflow-hidden" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[rgba(26,43,76,0.45)] backdrop-blur-[2px] animate-fadeIn transition-opacity"
+        className="fixed inset-0 bg-[rgba(26,43,76,0.45)] animate-fadeIn transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />

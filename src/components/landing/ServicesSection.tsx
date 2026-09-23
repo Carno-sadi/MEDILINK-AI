@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquare, Stethoscope, Pill, Siren, FileText, ArrowRight, Check, Sparkles, ShieldCheck } from "lucide-react";
+import { useIntersectionOnce } from "@/lib/useIntersection";
 
 // ── Particle Canvas for Dr. Medilink Master Card ──
 const CardParticleCanvas: React.FC<{ cardRef: React.RefObject<HTMLDivElement | null> }> = ({ cardRef }) => {
@@ -16,143 +17,62 @@ const CardParticleCanvas: React.FC<{ cardRef: React.RefObject<HTMLDivElement | n
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let width = 0, height = 0;
-    let mouseX = -1000, mouseY = -1000;
-    let isHovering = false;
+    const rect = card.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    interface P {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-      baseRadius: number;
-      opacity: number;
+    const particles: { x: number; y: number; vx: number; vy: number; radius: number }[] = [];
+    for (let i = 0; i < 10; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
+        radius: Math.random() * 1.5 + 1,
+      });
     }
-    let particles: P[] = [];
 
-    const resize = () => {
-      if (!card || !canvas || !ctx) return;
-      const rect = card.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    const createParticles = () => {
-      particles = [];
-      for (let i = 0; i < 35; i++) {
-        const br = Math.random() * 2.2 + 1.2;
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.35,
-          vy: (Math.random() - 0.5) * 0.35,
-          radius: br,
-          baseRadius: br,
-          opacity: Math.random() * 0.45 + 0.25,
-        });
-      }
-    };
+    let isVisible = true;
+    document.addEventListener("visibilitychange", () => {
+      isVisible = !document.hidden;
+      if (isVisible) animate();
+    });
 
     const animate = () => {
       if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x < 0) { p.x = 0; p.vx *= -1; }
-        if (p.x > width) { p.x = width; p.vx *= -1; }
-        if (p.y < 0) { p.y = 0; p.vy *= -1; }
-        if (p.y > height) { p.y = height; p.vy *= -1; }
-
-        if (isHovering) {
-          const dx = p.x - mouseX, dy = p.y - mouseY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100 && dist > 0) {
-            const force = (100 - dist) / 100;
-            p.vx += (dx / dist) * force * 0.15;
-            p.vy += (dy / dist) * force * 0.15;
-            p.radius = p.baseRadius + force * 2.8;
-          } else {
-            p.radius += (p.baseRadius - p.radius) * 0.08;
-          }
-          p.vx *= 0.99;
-          p.vy *= 0.99;
-        } else {
-          p.radius += (p.baseRadius - p.radius) * 0.08;
-        }
-      }
-
-      ctx.clearRect(0, 0, width, height);
-
-      // Connection lines
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            const alpha = (1 - dist / 120) * 0.24;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(23, 120, 111, ${alpha})`;
-            ctx.lineWidth = 0.85;
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Nodes
-      for (const p of particles) {
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(23, 120, 111, ${p.opacity})`;
+        ctx.fillStyle = "rgba(23, 120, 111, 0.4)";
         ctx.fill();
       }
-
-      animIdRef.current = requestAnimationFrame(animate);
+      if (isVisible) animIdRef.current = requestAnimationFrame(animate);
     };
 
-    const handleMove = (e: MouseEvent) => {
-      const rect = card.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      mouseY = e.clientY - rect.top;
-      isHovering = true;
-    };
-    const handleLeave = () => {
-      isHovering = false;
-      mouseX = -1000;
-      mouseY = -1000;
-    };
-
-    card.addEventListener("mousemove", handleMove);
-    card.addEventListener("mouseleave", handleLeave);
-
-    resize();
-    createParticles();
     animate();
-
-    const handleResize = () => { resize(); createParticles(); };
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", () => { animate(); });
 
     return () => {
       cancelAnimationFrame(animIdRef.current);
-      card.removeEventListener("mousemove", handleMove);
-      card.removeEventListener("mouseleave", handleLeave);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", () => {});
     };
   }, [cardRef]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full z-[1] opacity-50 pointer-events-none transition-opacity duration-300 group-hover:opacity-80"
+      className="absolute inset-0 w-full h-full z-[1] opacity-40 pointer-events-none"
     />
   );
 };
@@ -163,9 +83,10 @@ interface TiltCardProps {
   className?: string;
   cardRef?: React.RefObject<HTMLDivElement | null>;
   maxTilt?: number;
+  style?: React.CSSProperties;
 }
 
-const TiltCard: React.FC<TiltCardProps> = ({ children, className = "", cardRef: externalRef, maxTilt = 8 }) => {
+const TiltCard: React.FC<TiltCardProps> = ({ children, className = "", cardRef: externalRef, maxTilt = 8, style }) => {
   const internalRef = useRef<HTMLDivElement>(null);
   const cardRef = externalRef || internalRef;
   const [glarePos, setGlarePos] = useState({ x: 50, y: 50, opacity: 0 });
@@ -207,9 +128,9 @@ const TiltCard: React.FC<TiltCardProps> = ({ children, className = "", cardRef: 
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`group relative rounded-3xl bg-white/80 backdrop-blur-xl border border-brand/15 shadow-[0_16px_40px_-12px_rgba(23,120,111,0.12)] hover:shadow-[0_24px_54px_-10px_rgba(23,120,111,0.22)] p-7 md:p-8 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform overflow-hidden flex flex-col justify-between ${className}`}
-      style={{ transformStyle: "preserve-3d" }}
-    >
+       className={`group relative rounded-3xl bg-white border border-brand/15 shadow-[0_16px_40px_-12px_rgba(23,120,111,0.12)] hover:shadow-[0_24px_54px_-10px_rgba(23,120,111,0.22)] p-7 md:p-8 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex flex-col justify-between ${className}`}
+       style={{ transformStyle: "preserve-3d", ...style }}
+     >
       {/* Glare spotlight reflection */}
       <div
         className="pointer-events-none absolute inset-0 z-[3] transition-opacity duration-300 rounded-3xl"
@@ -226,12 +147,13 @@ const TiltCard: React.FC<TiltCardProps> = ({ children, className = "", cardRef: 
 
 export const ServicesSection: React.FC = () => {
   const masterCardRef = useRef<HTMLDivElement>(null);
+  const { ref, isVisible } = useIntersectionOnce();
 
   return (
     <section className="py-[100px] bg-bg-mint" id="bento-features">
       <div className="max-w-[1280px] mx-auto px-6">
         {/* Section Header */}
-        <div className="text-center mb-14">
+        <div className={`text-center mb-14 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <span className="inline-block font-sans font-medium text-[11px] tracking-[0.12em] uppercase text-brand bg-brand/10 border border-brand/20 rounded-full px-4 py-1.5 mb-4">
             Platform Services
           </span>
@@ -243,16 +165,15 @@ export const ServicesSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-12 gap-7">
-          {/* ══════════════════════════════════════════════════════════════════════
-              CARD 1: DR. MEDILINK AI CARE — OUR MAIN FLAGSHIP SERVICE (BIG CARD)
-              ══════════════════════════════════════════════════════════════════════ */}
-          <TiltCard
-            cardRef={masterCardRef}
-            maxTilt={5}
-            className="col-span-12 bg-white/90 border-brand/25 shadow-[0_20px_50px_-10px_rgba(23,120,111,0.18)] hover:shadow-[0_30px_70px_-10px_rgba(23,120,111,0.26)] p-8 md:p-10"
-          >
+         {/* Bento Grid */}
+         <div ref={ref} className="grid grid-cols-12 gap-7">
+            {/* CARD 1: DR. MEDILINK AI CARE */}
+           <TiltCard
+             cardRef={masterCardRef}
+             maxTilt={5}
+             className={`col-span-12 ${isVisible ? "animate-slideUp" : "opacity-0"}`}
+             style={isVisible ? { animationDelay: "0.1s" } : undefined}
+           >
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand via-brand-soft to-accent z-[2]" />
             <CardParticleCanvas cardRef={masterCardRef} />
 
@@ -363,10 +284,10 @@ export const ServicesSection: React.FC = () => {
             </div>
           </TiltCard>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              CARD 2: FIND YOUR DOCTOR (6 columns)
-              ══════════════════════════════════════════════════════════════════════ */}
-          <TiltCard className="col-span-12 md:col-span-6 min-h-[360px]">
+           {/* ══════════════════════════════════════════════════════════════════════
+               CARD 2: FIND YOUR DOCTOR (6 columns)
+               ══════════════════════════════════════════════════════════════════════ */}
+           <TiltCard className={`col-span-12 md:col-span-6 min-h-[360px] ${isVisible ? "animate-slideLeft" : "opacity-0"}`} style={isVisible ? { animationDelay: "0.25s" } : undefined}>
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-sans font-medium text-[11px] tracking-wider uppercase text-brand bg-brand/10 rounded-full px-3 py-1">
@@ -411,10 +332,10 @@ export const ServicesSection: React.FC = () => {
             </div>
           </TiltCard>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              CARD 3: WHATSAPP PHARMACY (6 columns)
-              ══════════════════════════════════════════════════════════════════════ */}
-          <TiltCard className="col-span-12 md:col-span-6 min-h-[360px]">
+           {/* ══════════════════════════════════════════════════════════════════════
+               CARD 3: WHATSAPP PHARMACY (6 columns)
+               ══════════════════════════════════════════════════════════════════════ */}
+           <TiltCard className={`col-span-12 md:col-span-6 min-h-[360px] ${isVisible ? "animate-slideRight" : "opacity-0"}`} style={isVisible ? { animationDelay: "0.35s" } : undefined}>
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-sans font-medium text-[11px] tracking-wider uppercase text-whatsapp bg-whatsapp/10 rounded-full px-3 py-1">
@@ -455,10 +376,10 @@ export const ServicesSection: React.FC = () => {
             </div>
           </TiltCard>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              CARD 4: EMERGENCY SOS & 999 (6 columns)
-              ══════════════════════════════════════════════════════════════════════ */}
-          <TiltCard className="col-span-12 md:col-span-6 min-h-[360px]">
+           {/* ══════════════════════════════════════════════════════════════════════
+               CARD 4: EMERGENCY SOS & 999 (6 columns)
+               ══════════════════════════════════════════════════════════════════════ */}
+           <TiltCard className={`col-span-12 md:col-span-6 min-h-[360px] ${isVisible ? "animate-slideUp" : "opacity-0"}`} style={isVisible ? { animationDelay: "0.45s" } : undefined}>
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-sans font-medium text-[11px] tracking-wider uppercase text-emergency bg-emergency/10 rounded-full px-3 py-1">
@@ -497,10 +418,10 @@ export const ServicesSection: React.FC = () => {
             </div>
           </TiltCard>
 
-          {/* ══════════════════════════════════════════════════════════════════════
-              CARD 5: PERSONAL HEALTH RECORDS (PRIVATE & ENCRYPTED) (6 columns)
-              ══════════════════════════════════════════════════════════════════════ */}
-          <TiltCard className="col-span-12 md:col-span-6 min-h-[360px]">
+           {/* ══════════════════════════════════════════════════════════════════════
+               CARD 5: PERSONAL HEALTH RECORDS (PRIVATE & ENCRYPTED) (6 columns)
+               ══════════════════════════════════════════════════════════════════════ */}
+           <TiltCard className={`col-span-12 md:col-span-6 min-h-[360px] ${isVisible ? "animate-scaleUp" : "opacity-0"}`} style={isVisible ? { animationDelay: "0.55s" } : undefined}>
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="font-sans font-medium text-[11px] tracking-wider uppercase text-brand bg-brand/10 rounded-full px-3 py-1">

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { useScrollReveal } from "@/lib/useScrollReveal";
+import { useIntersectionOnce } from "@/lib/useIntersection";
 import { createWhatsAppUrl } from "@/lib/whatsapp";
 
 import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/Toast";
 
 export const PlansSection: React.FC = () => {
   const router = useRouter();
-  const { ref, hasRevealed } = useScrollReveal();
+  const { ref, isVisible } = useIntersectionOnce();
   const [mounted, setMounted] = useState(false);
 
   const setPlan = useSubscriptionStore((s) => s.setPlan);
@@ -51,14 +51,15 @@ export const PlansSection: React.FC = () => {
 
   return (
     <section className="py-16 md:py-24 bg-white" ref={ref}>
-      <div
-        className={`max-w-[1200px] mx-auto px-4 md:px-8 transition-opacity duration-700 ${
-          hasRevealed ? "opacity-100 animate-riseIn" : "opacity-0"
-        }`}
-      >
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-[32px] md:text-[40px] font-heading font-bold text-text-primary mb-4">
-            Choose Your Plan
+       <div
+         className={`max-w-[1200px] mx-auto px-4 md:px-8 transition-opacity duration-700 ${
+           isVisible ? "opacity-100 animate-bounceUp" : "opacity-0"
+         }`}
+         style={isVisible ? { animationDelay: "0.1s" } : undefined}
+       >
+         <div className="text-center mb-12 md:mb-16">
+           <h2 className="text-[32px] md:text-[40px] font-heading font-bold text-text-primary mb-4">
+             Choose Your Plan
           </h2>
           <p className="text-[18px] text-text-muted max-w-2xl mx-auto">
             Get more AI guidance, discounts, and priority bookings.

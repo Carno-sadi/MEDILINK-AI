@@ -22,50 +22,34 @@ interface NucleotideDetail {
 
 const NUCLEOTIDE_DATA: Record<string, NucleotideDetail> = {
   Adenine: {
-    name: "Adenine",
-    symbol: "A",
-    type: "Purine",
-    pairedWith: "Thymine (A = T)",
-    bonds: "2 Hydrogen Bonds",
+    name: "Adenine", symbol: "A", type: "Purine",
+    pairedWith: "Thymine (A = T)", bonds: "2 Hydrogen Bonds",
     formula: "C₅H₅N₅",
-    functionDesc:
-      "Core nucleotide driving genetic translation and the primary adenosine triphosphate (ATP) cellular energy currency.",
+    functionDesc: "Core nucleotide driving genetic translation and the primary adenosine triphosphate (ATP) cellular energy currency.",
     medicalNote: "Critical cofactor in NAD+/FAD metabolic oxidation and RNA messenger synthesis.",
     color: "#17786F",
   },
   Thymine: {
-    name: "Thymine",
-    symbol: "T",
-    type: "Pyrimidine",
-    pairedWith: "Adenine (T = A)",
-    bonds: "2 Hydrogen Bonds",
+    name: "Thymine", symbol: "T", type: "Pyrimidine",
+    pairedWith: "Adenine (T = A)", bonds: "2 Hydrogen Bonds",
     formula: "C₅H₆N₂O₂",
-    functionDesc:
-      "Grants DNA elevated enzymatic stability over RNA, shielding the genetic sequence against photochemical deterioration.",
+    functionDesc: "Grants DNA elevated enzymatic stability over RNA, shielding the genetic sequence against photochemical deterioration.",
     medicalNote: "UV-induced thymine dimers serve as major clinical targets in dermatology and DNA damage repair.",
     color: "#2BA89B",
   },
   Cytosine: {
-    name: "Cytosine",
-    symbol: "C",
-    type: "Pyrimidine",
-    pairedWith: "Guanine (C ≡ G)",
-    bonds: "3 Hydrogen Bonds",
+    name: "Cytosine", symbol: "C", type: "Pyrimidine",
+    pairedWith: "Guanine (C ≡ G)", bonds: "3 Hydrogen Bonds",
     formula: "C₄H₅N₃O",
-    functionDesc:
-      "Forms triple-bonded stabilization and acts as the prime carrier for DNA methylation and epigenetic regulation.",
+    functionDesc: "Forms triple-bonded stabilization and acts as the prime carrier for DNA methylation and epigenetic regulation.",
     medicalNote: "CpG island hypermethylation patterns are recognized clinical biomarkers in early cancer screening.",
     color: "#7C3AED",
   },
   Guanine: {
-    name: "Guanine",
-    symbol: "G",
-    type: "Purine",
-    pairedWith: "Cytosine (G ≡ C)",
-    bonds: "3 Hydrogen Bonds",
+    name: "Guanine", symbol: "G", type: "Purine",
+    pairedWith: "Cytosine (G ≡ C)", bonds: "3 Hydrogen Bonds",
     formula: "C₅H₅N₅O",
-    functionDesc:
-      "High thermal stability nucleotide capable of forming four-stranded G-quadruplex structures safeguarding chromosome ends.",
+    functionDesc: "High thermal stability nucleotide capable of forming four-stranded G-quadruplex structures safeguarding chromosome ends.",
     medicalNote: "Essential for telomeric integrity and genomic stability; studied extensively in oncology genetics.",
     color: "#D92D20",
   },
@@ -124,7 +108,6 @@ export const ThreeDNAHelix: React.FC = () => {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       container.appendChild(renderer.domElement);
 
-      // Materials
       const strandAMat = new THREE.MeshPhongMaterial({
         color: 0x17786f,
         transparent: true,
@@ -150,7 +133,6 @@ export const ThreeDNAHelix: React.FC = () => {
         shininess: 40,
       });
 
-      // Lighting
       scene.add(new THREE.AmbientLight(0xffffff, 0.7));
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
       dirLight.position.set(5, 8, 8);
@@ -185,7 +167,6 @@ export const ThreeDNAHelix: React.FC = () => {
         nucleoB.position.set(bx, y, bz);
         dnaGroup.add(nucleoB);
 
-        // Backbone tubes
         if (i > 0) {
           const prevT = (i - 1) / BASE_PAIRS;
           const prevAngle = prevT * TWIST;
@@ -212,7 +193,6 @@ export const ThreeDNAHelix: React.FC = () => {
           );
         }
 
-        // Rungs
         const rungPath = new THREE.LineCurve3(
           new THREE.Vector3(ax, y, az),
           new THREE.Vector3(bx, y, bz)
@@ -234,7 +214,6 @@ export const ThreeDNAHelix: React.FC = () => {
         });
       }
 
-      // Outer glow sphere
       const glowGeo = new THREE.SphereGeometry(14, 32, 32);
       const glowMat = new THREE.MeshBasicMaterial({
         color: 0x2ba89b,
@@ -244,7 +223,6 @@ export const ThreeDNAHelix: React.FC = () => {
       });
       dnaGroup.add(new THREE.Mesh(glowGeo, glowMat));
 
-      // Hover indicator ring
       const ringGeo = new THREE.RingGeometry(4.7, 5.2, 64);
       hoverRingMat = new THREE.MeshBasicMaterial({
         color: 0x17786f,
@@ -281,7 +259,6 @@ export const ThreeDNAHelix: React.FC = () => {
       const rawX = (vector.x * 0.5 + 0.5) * rect.width + rect.left;
       const rawY = (-(vector.y * 0.5) + 0.5) * rect.height + rect.top;
 
-      // Viewport boundary clamp to ensure card is always fully visible
       const cardWidth = 300;
       const cardHeight = 240;
       const clampedX = Math.max(16, Math.min(window.innerWidth - cardWidth - 20, rawX + 24));
@@ -396,7 +373,6 @@ export const ThreeDNAHelix: React.FC = () => {
         className="absolute right-0 top-0 w-[55%] h-full z-[2] opacity-0 scale-[0.92] animate-[dnaMaterialize_1.2s_cubic-bezier(0.16,1,0.3,1)_0.8s_forwards] pointer-events-auto lg:block hidden cursor-grab active:cursor-grabbing"
       />
 
-      {/* Detailed DNA Tooltip & Interactive Information Card */}
       <div
         ref={tooltipRef}
         className="fixed z-[30] pointer-events-none opacity-0 translate-y-3 scale-95 transition-all duration-300"
@@ -404,7 +380,6 @@ export const ThreeDNAHelix: React.FC = () => {
       >
         {activeInfo && (
           <div className="w-[300px] bg-white/95 backdrop-blur-2xl border border-brand/25 rounded-2xl p-4 shadow-[0_16px_36px_rgba(23,120,111,0.2)] flex flex-col gap-2.5">
-            {/* Header: Name, Symbol, Category */}
             <div className="flex items-center justify-between border-b border-brand/10 pb-2">
               <div className="flex items-center gap-2">
                 <span
@@ -429,7 +404,6 @@ export const ThreeDNAHelix: React.FC = () => {
               </span>
             </div>
 
-            {/* Base Pairing Bond */}
             <div className="flex items-center justify-between text-[12px] bg-bg-mint px-2.5 py-1.5 rounded-lg border border-brand/10">
               <span className="font-sans font-semibold text-brand">
                 {activeInfo.pairedWith}
@@ -439,18 +413,15 @@ export const ThreeDNAHelix: React.FC = () => {
               </span>
             </div>
 
-            {/* Biological Role */}
             <p className="font-sans text-[12px] text-text-muted leading-relaxed">
               {activeInfo.functionDesc}
             </p>
 
-            {/* Clinical / Medical Insight */}
             <div className="border-t border-brand/10 pt-2 flex items-start gap-1.5 text-[11px] text-brand-dark">
               <span className="font-bold shrink-0 text-brand">⚡ Insight:</span>
               <span className="leading-snug">{activeInfo.medicalNote}</span>
             </div>
 
-            {/* B-DNA Specs Footer */}
             <div className="text-[10px] text-text-muted/70 pt-1 text-center font-mono">
               B-DNA Conformation · 10.5 bp/turn · 3.4 nm pitch
             </div>

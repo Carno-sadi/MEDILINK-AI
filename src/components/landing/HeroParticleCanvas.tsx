@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 
 interface Particle {
   x: number;
@@ -11,17 +11,15 @@ interface Particle {
   baseRadius: number;
 }
 
-const MOUSE_RADIUS = 160;
+const CONNECTION_DIST = 80;
+const PARTICLE_COUNT = 20;
+const MOUSE_RADIUS = 120;
 
 export const HeroParticleCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const animFrameRef = useRef<number>(0);
-  const isMobileRef = useRef(false);
-
-  const getParticleCount = useCallback(() => (isMobileRef.current ? 35 : 70), []);
-  const getConnectionDist = useCallback(() => (isMobileRef.current ? 90 : 120), []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,30 +27,29 @@ export const HeroParticleCanvas: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    isMobileRef.current = window.matchMedia("(max-width: 768px)").matches;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const count = isMobile ? PARTICLE_COUNT : PARTICLE_COUNT;
+    const connDist = isMobile ? CONNECTION_DIST : CONNECTION_DIST;
 
     function resizeCanvas() {
-      if (!canvas || !ctx) return;
-      const dpr = Math.min(window.devicePixelRatio, 2);
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const dpr = Math.min(window.devicePixelRatio, 1);
+      const c = canvas;
+      const cx = ctx;
+      if (!c || !cx) return;
+      c.width = window.innerWidth * dpr;
+      c.height = window.innerHeight * dpr;
+      cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function initParticles() {
-      const count = isMobileRef.current ? 35 : 70;
       const arr: Particle[] = [];
       for (let i = 0; i < count; i++) {
-        const r = Math.random() * 2 + 1.5;
+        const r = Math.random() * 1.5 + 1;
         arr.push({
           x: Math.random() * window.innerWidth,
           y: Math.random() * window.innerHeight,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
           radius: r,
           baseRadius: r,
         });
@@ -60,18 +57,22 @@ export const HeroParticleCanvas: React.FC = () => {
       particlesRef.current = arr;
     }
 
+    let isVisible = true;
+    document.addEventListener("visibilitychange", () => {
+      isVisible = !document.hidden;
+      if (isVisible) animate();
+    });
+
     function animate() {
       if (!canvas || !ctx) return;
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const CONNECTION_DIST = isMobileRef.current ? 90 : 120;
       ctx.clearRect(0, 0, w, h);
 
       const particles = particlesRef.current;
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
 
-      // Update & draw particles
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
@@ -82,70 +83,46 @@ export const HeroParticleCanvas: React.FC = () => {
         const dy = p.y - my;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const isHovered = dist < MOUSE_RADIUS;
+        p.radius = isHovered ? p.baseRadius + 1.5 : p.baseRadius;
 
-        if (isHovered) {
-          const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-          p.radius = p.baseRadius + force * 3;
-        } else {
-          p.radius += (p.baseRadius - p.radius) * 0.1;
-        }
-
-        // Draw particle
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = isHovered ? "#2BA89B" : "#17786F";
+        ctx.globalAlpha = isHovered ? 0.8 : 0.5;
         ctx.fill();
-
-        // Hover glow
-        if (isHovered) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius + 6, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(43, 168, 155, 0.12)";
-          ctx.fill();
-        }
       }
 
-      // Draw connections
+      ctx.globalAlpha = 1;
+
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < CONNECTION_DIST) {
-            const opacity = (1 - dist / CONNECTION_DIST) * 0.65;
+          if (dist < connDist) {
+            const opacity = (1 - dist / connDist) * 0.3;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.strokeStyle = `rgba(23, 120, 111, ${opacity})`;
-            ctx.lineWidth = 1.0;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       }
 
-      animFrameRef.current = requestAnimationFrame(animate);
+      if (isVisible) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
     }
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
     };
 
-    let resizeTimeout: ReturnType<typeof setTimeout>;
     const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        isMobileRef.current = window.matchMedia("(max-width: 768px)").matches;
-        resizeCanvas();
-        initParticles();
-      }, 150);
-    };
-
-    const handleVisibility = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(animFrameRef.current);
-      } else {
-        animate();
-      }
+      resizeCanvas();
+      initParticles();
     };
 
     resizeCanvas();
@@ -154,22 +131,20 @@ export const HeroParticleCanvas: React.FC = () => {
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("resize", handleResize);
-    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      clearTimeout(resizeTimeout);
+      document.removeEventListener("visibilitychange", () => {});
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full z-[1] opacity-0 animate-[particleFadeIn_1.2s_ease_0.4s_forwards] pointer-events-none"
-      style={{ willChange: "opacity" }}
+      className="absolute inset-0 w-full h-full z-[1] opacity-50 pointer-events-none"
+      style={{ willChange: "transform" }}
     />
   );
 };
