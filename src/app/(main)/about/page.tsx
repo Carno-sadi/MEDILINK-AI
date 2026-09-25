@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { MessageSquare, Pill, Siren, Heart, Code, Palette, PenTool, Sparkles } from "lucide-react";
+import { MessageSquare, Pill, Siren, Heart, Code, Palette, Sparkles } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -132,7 +132,7 @@ export default function AboutPage() {
                   Washik Jahan Yafi
                 </h3>
                 <p className="font-sans text-[14px] text-text-muted leading-relaxed mb-4">
-                  Visionary leader spearheading MediLink’s mission to connect millions across Bangladesh with instantaneous, empathetic, and life-saving digital healthcare infrastructure.
+                  Visionary leader spearheading MediLink's mission to connect millions across Bangladesh with instantaneous, empathetic, and life-saving digital healthcare infrastructure.
                 </p>
                 <div className="flex gap-2 flex-wrap justify-center sm:justify-start">
                   <span className="px-2.5 py-1 bg-bg-soft rounded-lg text-brand font-semibold text-[11px]">System Architecture</span>
@@ -195,40 +195,6 @@ export default function AboutPage() {
                 </h3>
                 <p className="font-sans text-[13px] text-text-muted leading-relaxed mt-1 line-clamp-2">
                   UI/UX visionary designing accessible glassmorphism, responsive components, and intuitive patient journeys.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── CARD 4: Sultan Bin Ashik Miah (Supporting Team Member) — Full Width Feature ── */}
-          <div className="lg:col-span-12 group bg-gradient-to-r from-bg-mint via-white to-bg-soft border border-brand/25 hover:border-brand/40 rounded-[28px] p-6 sm:p-8 shadow-sm hover:shadow-[0_16px_36px_rgba(23,120,111,0.12)] transition-all duration-400">
-            <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 shadow-md border-2 border-brand/20">
-                <Image
-                  src="/assets/team/sultan.jpg"
-                  alt="Sultan Bin Ashik Miah"
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-108"
-                />
-              </div>
-
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-brand bg-brand/10 border border-brand/20 px-3 py-1 rounded-full">
-                    <PenTool className="w-3 h-3" />
-                    Supporting Team Member
-                  </span>
-                  <span className="text-[12px] font-medium text-text-muted bg-white/80 px-2.5 py-0.5 rounded-md border border-border-soft">
-                    Creative & Medical Scriptwriting
-                  </span>
-                </div>
-
-                <h3 className="font-heading font-bold text-[21px] text-text-primary mb-1">
-                  Sultan Bin Ashik Miah
-                </h3>
-
-                <p className="font-sans text-[14px] text-text-muted leading-relaxed max-w-3xl">
-                  Dedicated supporting team member authoring clinical patient guidance scripts, medical communication guidelines, and ensuring empathetic, culturally resonant healthcare language throughout Dr. Medilink.
                 </p>
               </div>
             </div>
