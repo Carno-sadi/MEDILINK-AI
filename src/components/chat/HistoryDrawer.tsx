@@ -185,7 +185,7 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
                     <MessageSquare className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[14px] font-semibold text-text-primary truncate">
+                    <div className="text-[15px] font-semibold text-text-primary truncate">
                       {matchedIn === "title" ? (
                         <Highlight
                           text={session.title}
@@ -196,12 +196,12 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
                         session.title
                       )}
                     </div>
-                    <div className="text-[12px] text-text-muted">
+                    <div className="text-[12.5px] text-text-muted">
                       {new Date(session.createdAt).toLocaleDateString()} · {session.modelUsed === "med1-pro" ? "Pro" : "Flash"}
                     </div>
                     {matchedIn === "message" && snippet && (
                       <div
-                        className="text-[12px] text-text-muted mt-0.5 break-words"
+                        className="text-[13px] text-text-muted mt-0.5 break-words leading-snug"
                         style={snippetStyle}
                       >
                         <Highlight
