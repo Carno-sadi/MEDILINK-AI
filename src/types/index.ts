@@ -142,6 +142,60 @@ export interface Subscription {
 }
 
 /* ────────────────────────────────────────────────────────────────────
+   4b. Dr MediLink memory (v4)
+   ──────────────────────────────────────────────────────────────────── */
+
+export type MemoryCategory =
+  | "condition"
+  | "allergy"
+  | "medication"
+  | "personal"
+  | "preference"
+  | "other";
+
+export type MemorySource = "user" | "auto" | "import";
+
+/**
+ * One durable fact the patient wants Dr MediLink to remember across chats.
+ *
+ * Memory is deliberately separate from `Profile`: a profile is structured
+ * demographic data, while memory is a free-text, editable list the patient
+ * can add to, import from another AI, or delete at any time.
+ */
+export interface MemoryItem {
+  id: string;
+  text: string;
+  category: MemoryCategory;
+  source: MemorySource;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
+ * User-defined persistent instruction or fact injected into every future conversation.
+ * Unlike MemoryItem (which are extracted facts), MemoryPrompts are explicit instructions
+ * the user wants the AI to always follow (e.g., "Always reply in Banglish", "I prefer
+ * generic medicine names", "Remind me to take meds with food").
+ */
+export interface MemoryPrompt {
+  id: string;                    // mpt_<uuid>
+  text: string;                  // the instruction/fact
+  isActive: boolean;             // can be toggled without deleting
+  priority: number;              // injection order (higher = first)
+  createdAt: number;
+  updatedAt: number;
+}
+
+export function createMemoryPromptId(): string {
+  const random =
+    typeof globalThis.crypto !== "undefined" &&
+    typeof globalThis.crypto.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+  return `mpt_${random}`;
+}
+
+/* ────────────────────────────────────────────────────────────────────
    5. Chat
    ──────────────────────────────────────────────────────────────────── */
 
@@ -498,3 +552,47 @@ export interface RouteMatrix {
   results: RouteLeg[];
   cachedAt: string;
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   11. Health Log & Vitals (v4)
+   ──────────────────────────────────────────────────────────────────── */
+
+export type HealthLogType =
+  | "bp"
+  | "sugar"
+  | "temp"
+  | "weight"
+  | "pulse"
+  | "spo2";
+
+export interface HealthLogEntry {
+  id: string;
+  type: HealthLogType;
+  systolic?: number;       // for BP (mmHg)
+  diastolic?: number;      // for BP (mmHg)
+  value?: number;          // for sugar (mmol/L), temp (°F), weight (kg), pulse (bpm), spo2 (%)
+  context?: "fasting" | "post_meal" | "random" | "resting";
+  measuredAt: number;      // timestamp (ms)
+  note?: string;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   12. Appointments & Reminders (v4)
+   ──────────────────────────────────────────────────────────────────── */
+
+export interface Appointment {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  specialty: string;
+  type: "chat" | "video";
+  date: string;       // YYYY-MM-DD
+  time: string;       // HH:mm (e.g. "10:30")
+  status: "upcoming" | "completed" | "cancelled";
+  remind1DayBefore: boolean;
+  remind1HourBefore: boolean;
+  note?: string;
+  fee: number;
+  createdAt: number;
+}
+

@@ -13,6 +13,8 @@ import assert from "node:assert/strict";
 
 import { useMedicationStore } from "../../src/stores/useMedicationStore.ts";
 import { useAttachmentStore } from "../../src/stores/useAttachmentStore.ts";
+import { useHealthLogStore } from "../../src/stores/useHealthLogStore.ts";
+import { useAppointmentStore } from "../../src/stores/useAppointmentStore.ts";
 import type { Attachment, MedicationSchedule } from "../../src/types/index.ts";
 
 /* ────────────────────────────────────────────────────────────────────
@@ -306,3 +308,68 @@ test("an OCR result survives a simulated reload", async () => {
   assert.equal(restored.ocrConfidence, 0.82);
   assert.equal((restored.document as { medicines: unknown[] }).medicines.length, 1);
 });
+
+/* ────────────────────────────────────────────────────────────────────
+   Health Logs & Vitals
+   ──────────────────────────────────────────────────────────────────── */
+
+test("a health log entry is stored and formats summary for prompt", () => {
+  useHealthLogStore.getState().clearLogs();
+  assert.equal(useHealthLogStore.getState().logs.length, 0);
+
+  useHealthLogStore.getState().addLog({
+    type: "bp",
+    systolic: 120,
+    diastolic: 80,
+    note: "Normal reading",
+  });
+
+  useHealthLogStore.getState().addLog({
+    type: "sugar",
+    value: 6.2,
+    context: "fasting",
+  });
+
+  assert.equal(useHealthLogStore.getState().logs.length, 2);
+
+  const promptSummary = useHealthLogStore.getState().formatSummaryForPrompt(5);
+  assert.ok(promptSummary.includes("BP: 120/80 mmHg"));
+  assert.ok(promptSummary.includes("Blood Glucose: 6.2 mmol/L [fasting]"));
+
+  const raw = localStorage.getItem("medilink_health_logs");
+  assert.ok(raw);
+  assert.ok(raw.includes("120"));
+});
+
+/* ────────────────────────────────────────────────────────────────────
+   Appointments & Reminders
+   ──────────────────────────────────────────────────────────────────── */
+
+test("an appointment is saved and tracked as upcoming", () => {
+  useAppointmentStore.setState({ appointments: [] });
+  assert.equal(useAppointmentStore.getState().appointments.length, 0);
+
+  const apt = useAppointmentStore.getState().addAppointment({
+    doctorId: "doc_1",
+    doctorName: "Dr. Karim Ahmed",
+    specialty: "Cardiology",
+    type: "chat",
+    date: "2099-12-31",
+    time: "10:30 AM",
+    remind1DayBefore: true,
+    remind1HourBefore: true,
+    fee: 400,
+  });
+
+  assert.equal(apt.status, "upcoming");
+  assert.equal(useAppointmentStore.getState().appointments.length, 1);
+
+  const upcoming = useAppointmentStore.getState().getUpcomingAppointments();
+  assert.equal(upcoming.length, 1);
+  assert.equal(upcoming[0].doctorName, "Dr. Karim Ahmed");
+
+  useAppointmentStore.getState().cancelAppointment(apt.id);
+  assert.equal(useAppointmentStore.getState().appointments[0].status, "cancelled");
+  assert.equal(useAppointmentStore.getState().getUpcomingAppointments().length, 0);
+});
+

@@ -16,9 +16,11 @@ import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
 import { useAttachmentStore } from "@/stores/useAttachmentStore";
 import { useSummaryStore } from "@/stores/useSummaryStore";
 import { useMedicationStore } from "@/stores/useMedicationStore";
+import { useHealthLogStore } from "@/stores/useHealthLogStore";
 import { useToast } from "@/components/ui/Toast";
 import { exportChatToPDF } from "@/lib/pdf-generator";
 import { SummarizeModal } from "@/components/chat/SummarizeModal";
+import { HealthLogModal } from "@/components/health-log/HealthLogModal";
 import doctorsData from "@/data/doctors.json";
 import type { Doctor } from "@/types";
 import { createWhatsAppUrl } from "@/lib/whatsapp";
@@ -44,6 +46,7 @@ export default function ChatPage() {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [isHealthLogOpen, setIsHealthLogOpen] = useState(false);
   const [activeSummaryId, setActiveSummaryId] = useState<string | null>(null);
   // Provenance of the active summary, straight from the server.
   const [summarySource, setSummarySource] = useState<"model" | "fallback">("model");
@@ -414,7 +417,8 @@ export default function ChatPage() {
         body: JSON.stringify({
           messages: [...messages, { role: "user", content: messageForApi }],
           model: selectedModel,
-          profile: profile
+          profile: profile,
+          healthLogsSummary: useHealthLogStore.getState().formatSummaryForPrompt(5),
         })
       });
 
@@ -540,6 +544,7 @@ export default function ChatPage() {
           routeInfo={routeInfo}
           onSummarize={handleSummarize}
           canSummarize={messages.filter((m) => m.role === "user").length >= 2}
+          onOpenHealthLog={() => setIsHealthLogOpen(true)}
         />
         
         <ChatMessages
@@ -580,6 +585,12 @@ export default function ChatPage() {
       <ChatSidebar
         usageCount={dailyUsage.count}
         maxUsage={2}
+      />
+
+      {/* Health Log & Vitals */}
+      <HealthLogModal
+        isOpen={isHealthLogOpen}
+        onClose={() => setIsHealthLogOpen(false)}
       />
 
       {/* Doctor handover summary */}

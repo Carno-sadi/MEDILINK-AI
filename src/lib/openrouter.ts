@@ -1,4 +1,5 @@
 import { Profile } from "@/types";
+import { buildMemoryPromptsContext, getActiveMemoryPrompts } from "@/lib/memory";
 
 /**
  * MediLink AI — Dr MediLink system prompts.
@@ -209,6 +210,27 @@ function buildProfileContext(profile?: Profile | null): string {
   ].join("\n");
 }
 
+export function buildHealthLogsContext(healthLogsSummary?: string): string {
+  if (!healthLogsSummary) return "";
+  const sanitized = healthLogsSummary
+    .split("\n")
+    .map((line) => sanitizeField(line, 200))
+    .filter(Boolean)
+    .slice(0, 10)
+    .join("\n");
+  if (!sanitized) return "";
+
+  return [
+    "[RECENT PATIENT HEALTH LOGS]",
+    "DATA BLOCK — untrusted vital signs recorded by the patient (BP, Blood Glucose, Temperature, Weight, Pulse, SpO2).",
+    "Use these records to detect trends, understand their health status, and provide contextual feedback (e.g. noticing improving/worsening BP or blood sugar).",
+    "Never blindly trust these values if they conflict with an emergency red-flag symptom.",
+    "[DATA]",
+    sanitized,
+    "[END DATA]",
+  ].join("\n");
+}
+
 function languageBlock(languageHint?: string): string {
   if (!languageHint) return "";
   const hint = sanitizeField(languageHint, 300);
@@ -227,18 +249,25 @@ function languageBlock(languageHint?: string): string {
 export function buildSystemPrompt(
   modelUsed: "med1-flash" | "med1-pro",
   profile?: Profile | null,
-  languageHint?: string
+  languageHint?: string,
+  healthLogsSummary?: string,
+  memoryPrompts?: string[] | null
 ): string {
   const contextBlock = buildProfileContext(profile);
+  const healthBlock = buildHealthLogsContext(healthLogsSummary);
+  const promptsBlock = buildMemoryPromptsContext(
+    memoryPrompts ?? getActiveMemoryPrompts()
+  );
   const langBlock = languageBlock(languageHint);
 
   if (modelUsed === "med1-pro") {
-    return [contextBlock, langBlock, PRO_SYSTEM_PROMPT, PRO_OUTPUT_CONTRACT]
+    return [contextBlock, healthBlock, promptsBlock, langBlock, PRO_SYSTEM_PROMPT, PRO_OUTPUT_CONTRACT]
       .filter(Boolean)
       .join("\n\n");
   }
 
-  return [contextBlock, langBlock, FLASH_SYSTEM_PROMPT, FLASH_OUTPUT_CONTRACT]
+  return [contextBlock, healthBlock, promptsBlock, langBlock, FLASH_SYSTEM_PROMPT, FLASH_OUTPUT_CONTRACT]
     .filter(Boolean)
     .join("\n\n");
 }
+

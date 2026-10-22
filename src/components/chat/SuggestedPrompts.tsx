@@ -42,10 +42,10 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({ profile, onS
         <button
           key={idx}
           onClick={() => onSelect(prompt)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-border-soft rounded-full text-[13px] font-medium text-brand hover:border-brand-soft hover:bg-brand-light transition-colors text-left"
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border-soft rounded-full text-[14px] md:text-[14.5px] font-medium text-brand hover:border-brand-soft hover:bg-brand-light transition-colors text-left shadow-xs"
         >
           <Sparkles className="w-4 h-4 shrink-0" />
-          <span className="truncate max-w-[200px] sm:max-w-none">{prompt}</span>
+          <span className="truncate max-w-[240px] sm:max-w-none">{prompt}</span>
         </button>
       ))}
     </div>

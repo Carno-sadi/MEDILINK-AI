@@ -243,7 +243,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isListening ? "Listening to your voice…" : "Describe symptoms or ask health questions..."}
-            className="w-full bg-transparent border-none focus:outline-none resize-none py-3 px-2 text-[15px] max-h-[120px] text-text-primary placeholder:text-text-muted/70"
+            className="w-full bg-transparent border-none focus:outline-none resize-none py-3 px-2 text-[16px] md:text-[17px] leading-relaxed max-h-[120px] text-text-primary placeholder:text-text-muted/70"
             rows={1}
             disabled={isLoading}
           />
@@ -271,7 +271,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )}
         </div>
 
-        <div className="text-center mt-2 text-[12px] text-text-muted">
+        <div className="text-center mt-2.5 text-[13px] text-text-muted">
           Dr MediLink is an AI health companion. In medical emergencies, immediately call 999.
         </div>
       </div>

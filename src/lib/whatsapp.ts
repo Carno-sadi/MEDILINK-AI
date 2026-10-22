@@ -108,19 +108,21 @@ Please confirm availability and delivery time.`;
 export function generateDoctorBookingMessage(params: {
   profile: Partial<Profile>;
   doctor: Doctor;
+  selectedDate?: string;
   selectedTime?: string;
   symptoms?: string;
   isPremium?: boolean;
   /** Clinical handover summary appended to the message */
   clinicalSummary?: ConsultationSummary | null;
 }): string {
-  const { profile, doctor, selectedTime, symptoms, isPremium, clinicalSummary } = params;
+  const { profile, doctor, selectedDate, selectedTime, symptoms, isPremium, clinicalSummary } = params;
   const allergiesStr =
     profile.allergies && profile.allergies.length > 0
       ? profile.allergies.join(", ")
       : "None";
 
   const summaryBlock = clinicalSummary ? `\n${renderSummaryForWhatsApp(clinicalSummary)}` : "";
+  const dateLine = selectedDate ? `\n*Preferred Date:* ${selectedDate}` : "";
 
   return `*MediLink Doctor Booking*
 *Patient:* ${profile.name || "Guest"}
@@ -128,7 +130,7 @@ export function generateDoctorBookingMessage(params: {
 *Doctor:* ${doctor.name}
 *Specialty:* ${doctor.specialty}
 *Consultation Type:* WhatsApp Chat
-*Fee:* ৳${doctor.feeWhatsapp}
+*Fee:* ৳${doctor.feeWhatsapp}${dateLine}
 *Preferred Time:* ${selectedTime || doctor.availability || "Any time"}
 *Symptoms:* ${symptoms || clinicalSummary?.chiefComplaint || "General Consultation"}
 *Known Allergies:* ${allergiesStr}

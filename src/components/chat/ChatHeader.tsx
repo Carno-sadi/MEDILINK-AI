@@ -1,7 +1,8 @@
 import React from "react";
-import { FileClock, Plus, Menu, Stethoscope } from "lucide-react";
+import { FileClock, Plus, Menu, Stethoscope, Activity, Brain } from "lucide-react";
 import { SegmentedControl } from "./SegmentedControl";
 import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
+import { MemoryPromptsModal } from "./MemoryPromptsModal";
 
 interface ChatHeaderProps {
   modelValue: "med1-flash" | "med1-pro";
@@ -14,6 +15,7 @@ interface ChatHeaderProps {
   onSummarize?: () => void;
   /** Disabled when the conversation is too short to summarise. */
   canSummarize?: boolean;
+  onOpenHealthLog?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -25,16 +27,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   routeInfo,
   onSummarize,
   canSummarize,
+  onOpenHealthLog,
 }) => {
   // localStorage is unavailable during SSR, so the server renders the free
   // state. Gate on mount to keep hydration consistent, then reveal Premium.
   const [mounted, setMounted] = React.useState(false);
+  const [isMemoryPromptsOpen, setIsMemoryPromptsOpen] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const isPremium = useSubscriptionStore(s => s.isPremium());
   const premiumActive = mounted && isPremium;
 
   return (
-    <div className="h-16 border-b border-border-soft bg-white px-4 flex items-center justify-between shrink-0 sticky top-0 z-10">
+    <>
+      <div className="h-16 border-b border-border-soft bg-white px-4 flex items-center justify-between shrink-0 sticky top-0 z-10">
       
       {/* Left: Mobile Menu + Doctor Info */}
       <div className="flex items-center gap-3">
@@ -53,9 +58,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-white"></div>
           </div>
           <div>
-            <div className="text-[14px] font-bold text-text-primary leading-tight">Dr MediLink</div>
+            <div className="text-[15.5px] font-bold text-text-primary leading-tight">Dr MediLink</div>
             <div
-              className="text-[12px] text-text-muted font-medium"
+              className="text-[13px] text-text-muted font-medium"
               title={
                 routeInfo
                   ? `Routed to ${routeInfo.model} · ${routeInfo.language} · ${routeInfo.task}`
@@ -86,6 +91,16 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           />
         </div>
         
+        {/* Memory Prompts Button */}
+        <button
+          onClick={() => setIsMemoryPromptsOpen(true)}
+          title="Memory Prompts — persistent instructions for Dr MediLink"
+          className="w-9 h-9 flex items-center justify-center rounded-full text-text-muted hover:bg-bg-soft hover:text-text-primary transition-colors"
+          aria-label="Memory Prompts"
+        >
+          <Brain className="w-5 h-5" />
+        </button>
+
         {onSummarize && (
           <button
             onClick={onSummarize}
@@ -99,7 +114,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             aria-label="Summarize for doctor"
           >
             <Stethoscope className="w-4 h-4" />
-            <span className="hidden md:inline text-[13px] font-bold">Summarize</span>
+            <span className="hidden md:inline text-[14px] font-bold">Summarize</span>
+          </button>
+        )}
+
+        {onOpenHealthLog && (
+          <button
+            onClick={onOpenHealthLog}
+            title="স্বাস্থ্য লগ / Vitals (BP, Sugar, Temp)"
+            className="h-9 px-3 flex items-center gap-1.5 rounded-full border border-border-soft text-text-primary hover:border-brand-light hover:bg-bg-soft transition-colors"
+            aria-label="Health Log"
+          >
+            <Activity className="w-4 h-4 text-brand" />
+            <span className="hidden sm:inline text-[14px] font-semibold">স্বাস্থ্য লগ</span>
           </button>
         )}
 
@@ -120,5 +147,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </button>
       </div>
     </div>
+
+      <MemoryPromptsModal
+        isOpen={isMemoryPromptsOpen}
+        onClose={() => setIsMemoryPromptsOpen(false)}
+      />
+    </>
   );
 };

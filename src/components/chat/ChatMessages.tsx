@@ -128,9 +128,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   const renderContent = (msg: ChatMessage) => {
     if (msg.role === "user") {
-      return <div className="whitespace-pre-wrap" lang={detectLang(msg.content)}>
-        {msg.content}
-      </div>;
+      return (
+        <div className="whitespace-pre-wrap text-[16px] md:text-[17px] leading-[1.7]" lang={detectLang(msg.content)}>
+          {msg.content}
+        </div>
+      );
     }
 
     // The AI replies in English / Bangla / Banglish. Tagging the language
@@ -142,32 +144,32 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     const lang = detectLang(msg.content);
 
     return (
-      <div lang={lang}>
+      <div lang={lang} className="text-[16px] md:text-[17px] leading-[1.7]">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
             p: ({ node, children, ...props }) => (
-              <p className="my-2 leading-relaxed" {...props}>{children}</p>
+              <p className="my-2.5 leading-[1.7]" {...props}>{children}</p>
             ),
             li: ({ node, children, ...props }) => (
-              <li className="ml-4 list-disc my-0.5" {...props}>{children}</li>
+              <li className="ml-4 list-disc my-1 leading-[1.7]" {...props}>{children}</li>
             ),
             ul: ({ node, children, ...props }) => (
-              <ul className="my-2 flex flex-col gap-1" {...props}>{children}</ul>
+              <ul className="my-2.5 flex flex-col gap-1.5" {...props}>{children}</ul>
             ),
             ol: ({ node, children, ...props }) => (
-              <ol className="my-2 ml-4 list-decimal flex flex-col gap-1" {...props}>{children}</ol>
+              <ol className="my-2.5 ml-4 list-decimal flex flex-col gap-1.5" {...props}>{children}</ol>
             ),
             table: ({ node, ...props }) => (
-              <div className="overflow-x-auto my-3 rounded-xl border border-border-soft">
-                <table className="w-full text-left border-collapse text-[14px]" {...props} />
+              <div className="overflow-x-auto my-3.5 rounded-xl border border-border-soft">
+                <table className="w-full text-left border-collapse text-[15px]" {...props} />
               </div>
             ),
             th: ({ node, ...props }) => (
-              <th className="bg-bg-soft border-b border-border-soft px-3.5 py-2.5 font-semibold text-text-primary text-[13px]" {...props} />
+              <th className="bg-bg-soft border-b border-border-soft px-4 py-3 font-semibold text-text-primary text-[14.5px]" {...props} />
             ),
             td: ({ node, ...props }) => (
-              <td className="border-b border-border-soft px-3.5 py-2.5 text-[13.5px] text-text-primary/90" {...props} />
+              <td className="border-b border-border-soft px-4 py-3 text-[15px] text-text-primary/90" {...props} />
             ),
             strong: ({ node, ...props }) => (
               <strong className="font-semibold text-text-primary" {...props} />
@@ -188,8 +190,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
           </svg>
         </div>
-        <h2 className="text-[20px] font-heading font-bold text-text-primary mb-2">How can I help you today?</h2>
-        <p className="text-[14px] text-text-muted max-w-sm mx-auto">
+        <h2 className="text-[22px] font-heading font-bold text-text-primary mb-2">How can I help you today?</h2>
+        <p className="text-[15.5px] text-text-muted max-w-sm mx-auto leading-relaxed">
           Describe your symptoms or ask a health-related question. I can also help you find medicines or doctors.
         </p>
       </div>
@@ -212,19 +214,19 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         const medicationMentions = medicationMentionsById[msg.id] ?? [];
 
         return (
-          <div key={msg.id} className={`group flex gap-3 max-w-[85%] ${isUser ? "self-end flex-row-reverse" : "self-start"}`}>
+          <div key={msg.id} className={`group flex gap-3 max-w-[88%] ${isUser ? "self-end flex-row-reverse" : "self-start"}`}>
             {/* Avatar */}
-            <div className={`w-8 h-8 rounded-full flex shrink-0 items-center justify-center shadow-xs ${
+            <div className={`w-9 h-9 rounded-full flex shrink-0 items-center justify-center shadow-xs ${
               isUser
                 ? "bg-bg-soft text-text-muted"
-                : "bg-brand text-white font-bold text-[12px]"
+                : "bg-brand text-white font-bold text-[13px]"
             }`}>
-              {isUser ? <User className="w-4 h-4" /> : "Dr"}
+              {isUser ? <User className="w-4.5 h-4.5" /> : "Dr"}
             </div>
 
             {/* Bubble & Actions */}
             <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-              <div className={`px-4 py-3 rounded-[18px] text-[15px] leading-relaxed shadow-sm transition-all ${
+              <div className={`px-4.5 py-3.5 rounded-[18px] text-[16px] md:text-[17px] leading-[1.7] shadow-sm transition-all ${
                 isUser
                   ? "bg-brand text-white rounded-tr-sm"
                   : "bg-white border border-border-soft text-text-primary rounded-tl-sm"
@@ -237,7 +239,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[13px] font-semibold text-brand tracking-tight">
+                        <span className="text-[14px] font-semibold text-brand tracking-tight">
                           Dr MediLink is typing
                         </span>
                         <div className="flex items-center gap-1 ml-0.5">
@@ -246,7 +248,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                           <span className="w-1.5 h-1.5 rounded-full bg-brand animate-bounce" style={{ animationDuration: "0.8s", animationDelay: "320ms" }}></span>
                         </div>
                       </div>
-                      <span className="text-[11px] text-text-muted">
+                      <span className="text-[12.5px] text-text-muted">
                         Taking a look at your symptoms…
                       </span>
                     </div>
@@ -292,29 +294,29 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 )}
 
               {/* Message metadata & action buttons */}
-              <div className="flex items-center gap-2 mt-1 px-1 text-[11px] text-text-muted">
+              <div className="flex items-center gap-2 mt-1 px-1 text-[12.5px] text-text-muted">
                 {msg.timestamp && (
                   <span>{formatTimestamp(msg.timestamp)}</span>
                 )}
 
                 {/* Assistant action buttons */}
                 {!isUser && msg.content && (
-                  <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
                     {/* Copy Button */}
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}
-                      className="flex items-center gap-1 text-[11px] text-text-muted hover:text-brand transition-colors px-1.5 py-0.5 rounded hover:bg-bg-soft"
+                      className="flex items-center gap-1 text-[12px] text-text-muted hover:text-brand transition-colors px-2 py-0.5 rounded hover:bg-bg-soft"
                       aria-label="Copy message"
                       title="Copy response"
                     >
                       {isCopied ? (
                         <>
-                          <Check className="w-3 h-3 text-brand" />
+                          <Check className="w-3.5 h-3.5 text-brand" />
                           <span className="text-brand font-medium">Copied</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3 h-3" />
+                          <Copy className="w-3.5 h-3.5" />
                           <span>Copy</span>
                         </>
                       )}
@@ -323,7 +325,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                     {/* Listen / Read Aloud Button */}
                     <button
                       onClick={() => handleSpeak(msg.id, msg.content)}
-                      className={`flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded hover:bg-bg-soft transition-colors ${
+                      className={`flex items-center gap-1 text-[12px] px-2 py-0.5 rounded hover:bg-bg-soft transition-colors ${
                         isSpeaking ? "text-brand font-medium" : "text-text-muted hover:text-brand"
                       }`}
                       aria-label={isSpeaking ? "Stop listening" : "Read aloud"}
@@ -331,12 +333,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                     >
                       {isSpeaking ? (
                         <>
-                          <VolumeX className="w-3 h-3 text-brand animate-pulse" />
+                          <VolumeX className="w-3.5 h-3.5 text-brand animate-pulse" />
                           <span>Stop</span>
                         </>
                       ) : (
                         <>
-                          <Volume2 className="w-3 h-3" />
+                          <Volume2 className="w-3.5 h-3.5" />
                           <span>Listen</span>
                         </>
                       )}

@@ -7,6 +7,8 @@ import {
   RoutePlan,
 } from "@/lib/model-router";
 import { Profile } from "@/types";
+import { selectHealthyKey, markKeySuccess, markKeyFailed } from "@/lib/api-key-pool";
+import { getActiveMemoryPrompts } from "@/lib/memory";
 
 export const runtime = "nodejs";
 
@@ -402,14 +404,14 @@ function findCorruption(text: string): string | null {
    ──────────────────────────────────────────────────────────────────── */
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
+    const keyConfig = await selectHealthyKey();
+    if (!keyConfig) {
       return NextResponse.json(
         {
           error:
-            "OpenRouter API key is not configured. Add OPENROUTER_API_KEY to .env.local and restart the dev server.",
+            "All API keys are exhausted or cooling down. Please try again in a moment.",
         },
-        { status: 500, headers: mediLinkHeaders({}) }
+        { status: 503, headers: mediLinkHeaders({}) }
       );
     }
 
@@ -459,10 +461,12 @@ export async function POST(req: NextRequest) {
       messages: rawMessages,
       model = "med1-flash",
       profile,
+      healthLogsSummary,
     } = body as {
       messages: { role: "user" | "assistant"; content: string }[];
       model?: "med1-flash" | "med1-pro";
       profile?: Profile | null;
+      healthLogsSummary?: string;
     };
 
     const messages = sanitizeMessages(rawMessages);
@@ -491,7 +495,9 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildSystemPrompt(
       mode,
       sanitizeProfile(profile),
-      plan.languageHint
+      plan.languageHint,
+      healthLogsSummary,
+      getActiveMemoryPrompts()
     );
     const openRouterMessages = [
       { role: "system", content: systemPrompt },
@@ -500,7 +506,7 @@ export async function POST(req: NextRequest) {
 
     const requestHeaders = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${keyConfig.key}`,
       "HTTP-Referer": "https://medilink.com.bd",
       "X-Title": "MediLink Bangladesh",
     };
@@ -561,6 +567,7 @@ export async function POST(req: NextRequest) {
           );
         } else {
           markModelFailed(candidate.id, 0);
+          await markKeyFailed(keyConfig, 0);
           console.warn(
             `[MediLink] ${candidate.id} network error/timeout:`,
             err?.message || err
@@ -579,6 +586,7 @@ export async function POST(req: NextRequest) {
       if (!res.ok || !res.body) {
         const errText = await res.text().catch(() => "");
         markModelFailed(candidate.id, res.status);
+        await markKeyFailed(keyConfig, res.status);
         console.warn(
           `[MediLink] ${candidate.id} failed (${res.status}):`,
           errText.slice(0, 300)
@@ -653,6 +661,7 @@ export async function POST(req: NextRequest) {
 
       if (!garbledReason && (enoughContent || shortButFinished)) {
         markModelHealthy(candidate.id);
+        await markKeySuccess(keyConfig);
         activeReader = reader;
         activeParser = parser;
         activeDecoder = decoder;
@@ -669,10 +678,12 @@ export async function POST(req: NextRequest) {
         /* already released */
       });
       combined.dispose();
+      const keyStatus = garbledReason ? 429 : 504; // map pseudo-status to HTTP-like codes
       markModelFailed(
         candidate.id,
         garbledReason ? CORRUPT_OUTPUT_SENTINEL : TTFT_TIMEOUT_SENTINEL
       );
+      await markKeyFailed(keyConfig, keyStatus);
       console.warn(
         `[MediLink] ${candidate.id} rejected (${
           garbledReason

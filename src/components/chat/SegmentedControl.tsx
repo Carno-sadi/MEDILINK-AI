@@ -17,7 +17,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, val
             disabled={opt.disabled}
             onClick={() => onChange(opt.value)}
             className={`
-              relative px-4 py-1.5 text-[13px] font-bold rounded-md transition-all duration-200 select-none
+              relative px-4 py-1.5 text-[13.5px] font-bold rounded-md transition-all duration-200 select-none
               ${isActive ? "text-brand shadow-sm bg-white" : "text-text-muted hover:text-text-primary"}
               ${opt.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
             `}
